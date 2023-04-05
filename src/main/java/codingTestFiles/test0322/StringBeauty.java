@@ -27,14 +27,49 @@ package codingTestFiles.test0322;
 
 import java.util.*;
 
-class StringBeauty {
-    public int solution(String s) {
-        int answer = 0;
-        ArrayList<Integer>[] alpha = new ArrayList[25];
+public class StringBeauty {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        System.out.println(beautySum(s));
+        sc.close();
+    }
+
+    public static int beautySum(String s) {
+        int n = s.length();
+        ArrayList<Integer>[] indices = new ArrayList[26];
         for (int i = 0; i < 26; i++) {
-            ArrayList<Integer> arrayList = new ArrayList();
-            alpha[i] = arrayList;
+            indices[i] = new ArrayList<Integer>();
         }
-        return answer;
+        for (int i = 0; i < n; i++) {
+            indices[s.charAt(i) - 'a'].add(i);
+        }
+        ArrayList<Integer> blockSizes = new ArrayList<Integer>();
+        HashMap<Integer, Integer> blockCount = new HashMap<Integer, Integer>();
+        for (int i = 0; i < 26; i++) {
+            if (indices[i].size() > 0) {
+                blockSizes.add(indices[i].size());
+                if (blockCount.containsKey(indices[i].size())) {
+                    blockCount.put(indices[i].size(), blockCount.get(indices[i].size()) + 1);
+                } else {
+                    blockCount.put(indices[i].size(), 1);
+                }
+            }
+        }
+        int res = 0;
+        for (int i = 0; i < blockSizes.size(); i++) {
+            int blockSize = blockSizes.get(i);
+            int count = blockCount.get(blockSize);
+            int maxDist = 0;
+            for (int j = 1; j < blockSize; j++) {
+                int dist = indices[i].get(j) - indices[i].get(j - 1);
+                if (dist > maxDist) {
+                    maxDist = dist;
+                }
+            }
+            res += count * maxDist;
+        }
+        return res;
     }
 }
+
