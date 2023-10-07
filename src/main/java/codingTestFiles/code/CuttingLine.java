@@ -1,4 +1,4 @@
-package codingTestFiles.test0322;
+package codingTestFiles.code;
 
 import java.util.*;
 
