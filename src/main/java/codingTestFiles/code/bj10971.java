@@ -5,32 +5,34 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-public class bj10819 {
+public class bj10971 {
 
-    public static int MAX;
     public static int N;
+    public static int[] cityArr;
     public static boolean[] visited;
-    public static int[] numArr;
-    public static int[] answerArr;
-    public static StringBuilder sb = new StringBuilder();
+    public static long MIN;
+    public static int[][] costArr;
 
     public static void main(String[] args) throws Exception {
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         N = Integer.parseInt(br.readLine());
-        numArr = new int[N];
-        answerArr = new int[N];
         visited = new boolean[N];
-        String line = br.readLine();
-        String[] split = line.split(" ");
+        cityArr = new int[N];
+        costArr = new int[N][N];
         for (int i = 0; i < N; i++) {
-            numArr[i] = Integer.parseInt(split[i]);
+            String line = br.readLine();
+            String[] split = line.split(" ");
+            for (int j = 0; j < N; j++) {
+                costArr[i][j] = Integer.parseInt(split[j]);
+                MIN += costArr[i][j];
+            }
         }
 
         dfs(0);
 
-        bw.write(MAX + "");
+        bw.write(MIN + "");
 
         bw.flush();
         bw.close();
@@ -39,17 +41,23 @@ public class bj10819 {
 
     private static void dfs(int depth) {
         if (depth == N) {
-            int count = 0;
+            int cost = 0;
             for (int i = 0; i < N - 1; i++) {
-                count = count + Math.abs(answerArr[i] - answerArr[i + 1]);
+                cost += costArr[cityArr[i]][cityArr[i + 1]];
             }
-            MAX = Math.max(count, MAX);
+            if (costArr[cityArr[N - 1]][cityArr[0]] == 0) return;
+            cost += costArr[cityArr[N - 1]][cityArr[0]];
+            MIN = Math.min(cost, MIN);
             return;
         }
         for (int i = 0; i < N; i++) {
             if (!visited[i]) {
+                // "경우에 따라서 도시 i에서 도시 j로 갈 수 없는 경우도 있으며 이럴 경우 W[i][j]=0이라고 하자."
+                if (depth > 0) {
+                    if (costArr[cityArr[depth - 1]][i] == 0) continue;
+                }
                 visited[i] = true;
-                answerArr[depth] = numArr[i];
+                cityArr[depth] = i;
                 dfs(depth + 1);
                 visited[i] = false;
             }
