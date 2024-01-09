@@ -1,4 +1,4 @@
-package codingTestFiles.code;
+package codingTestFiles.code.re;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
