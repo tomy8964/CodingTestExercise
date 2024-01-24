@@ -2,7 +2,9 @@ package codingTestFiles.code;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 
@@ -11,8 +13,9 @@ public class bj6087 {
     static int[][][] visited;
     static int[] xMove = {-1, 0, 1, 0};
     static int[] yMove = {0, -1, 0, 1};
+    static point[] cPoint;
     static int W, H, ANSWER = 100000;
-    static Queue<point> queue = new LinkedList<>();
+    static PriorityQueue<point> queue = new PriorityQueue<>();
 
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -23,81 +26,79 @@ public class bj6087 {
 
         map = new char[H][W];
         visited = new int[H][W][4];
+        cPoint = new point[2];
 
-        point start = null;
-
-        for (int i = 0; i < H; i++) {
+        for (int i = 0, idx = 0; i < H; i++) {
             String line = br.readLine();
-            char[] charArray = line.toCharArray();
+            map[i] = line.toCharArray();
             for (int j = 0; j < W; j++) {
-                map[i][j] = charArray[j];
-                if (map[i][j] == 'C') {
-                    start = new point(i, j, 0, 0);
-                }
+                if (map[i][j] == 'C') cPoint[idx++] = new point(i, j, -5, -1);
             }
         }
 
-        bfs(start);
+        bfs(cPoint[0]);
 
         System.out.println(ANSWER);
         br.close();
     }
 
     public static void bfs(point start) {
+        point c = cPoint[1];
         queue.add(start);
-        for (int i = 1; i < 4; i++) {
-            queue.add(new point(start.x, start.y, start.count, i));
+
+        for (int i = 0; i < H; i++) {
+            for (int j = 0; j < W; j++) {
+                Arrays.fill(visited[i][j], Integer.MAX_VALUE);
+            }
         }
 
         while (!queue.isEmpty()) {
             point current = queue.poll();
+
+            if (current.x == c.x && current.y == c.y) {
+                ANSWER = Math.min(ANSWER, current.mirrors);
+                continue;
+            }
+
             for (int i = 0; i < 4; i++) {
                 int newX = current.x + xMove[i];
                 int newY = current.y + yMove[i];
+
 
                 if (newX < 0 || newY < 0 || newX >= H || newY >= W) continue;
 
                 if (map[newX][newY] == '*') continue;
 
-                if (map[newX][newY] == 'C') {
-                    if (i != current.direction) {
-                        ANSWER = Math.min(ANSWER, current.count + 1);
-                    } else {
-                        ANSWER = Math.min(ANSWER, current.count);
-                    }
-                    continue;
-                }
 
-                if (visited[newX][newY][i] > current.count) {
-                    visited[newX][newY][i] = current.count;
-                    // 같은 방향으로 가는게 아니라면 거울을 하나 더 사용해야 하므로
-                    // count + 1
-                    // direction 변경
-                    if (i != current.direction) {
-                        // 180 회전이라면 패스
-                        if (i - current.direction == 2) continue;
-                        queue.add(new point(newX, newY, current.count + 1, i));
-                    } else {
-                        queue.add(new point(newX, newY, current.count, current.direction));
-                    }
+                // 180 회전이라면 갈 수 없는 구조이므로 패스
+                if (Math.abs(i - current.dir) == 2) continue;
+
+                // 90 회전을 해야 한다면 거울의 갯수 +1
+                int nextMirror = (current.dir == i) ? current.mirrors : current.mirrors + 1;
+
+                // 현재 방향에서 다음 newX, newY 위치로 갈때 사용한 미러의 갯수가
+                // 더 적은 경우가 생긴다면
+                if (visited[newX][newY][i] > nextMirror) {
+                    visited[newX][newY][i] = nextMirror;
+                    queue.add(new point(newX, newY, i, nextMirror));
                 }
             }
         }
     }
 
-    public static class point {
-        int x;
-        int y;
-        int count;
-        // 0, 1, 2, 3
-        // 상, 하, 좌, 우
-        int direction;
+    public static class point implements Comparable<point> {
+        int x, y, dir, mirrors;
 
-        public point(int x, int y, int count, int direction) {
+        public point(int x, int y, int dir, int mirrors) {
             this.x = x;
             this.y = y;
-            this.count = count;
-            this.direction = direction;
+            this.dir = dir;
+            this.mirrors = mirrors;
+        }
+
+        @Override
+        public int compareTo(point o) {
+            return this.mirrors - o.mirrors;
         }
     }
 }
